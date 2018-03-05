@@ -105,7 +105,7 @@
     + `cache.js`            缓存操作相关
     + `checkout_url.js`     ulr路径
     + `checkoutPhone.js`    校验手机号码
-    + `common.js`           支付配置
+    + `common.js`           支付配置与调用微信支付返回new Promise()
     + `handle_dom.js`       DOM操作相关
     + `handle_img.js`       图片地址拼接
     + `numberHandler.js`    数字相关
@@ -127,39 +127,37 @@
  + fonts
 #### 子组件
  + components
+    <details>
+
+    + `coreAddress`         用户的地址的子组件，根据地址的列表，循环地址的列表。
+                                方法：根据地址的id删除地址、根据地址的id编辑地址、根据地址的状态改变地址的默认地址状态
+    + `experience`          体验页面的子组件，获取体验的文字与图片的列表。里面有交押金弹框的提醒与调用支付
+    </details>
 #### 页面
  + page
     <details>
 
-    + `auth`                鉴权页，进入此应用的第一个页面，获取微信授权和获取用户的微信信息 
-        ``` javascipt
-            //根据微信返回的code判定用户是否授权
-            //获取code之后请求数据可以获取用户信息
-            //获取用户信息之后进行本地存储
-        ```
+    + `auth`                鉴权页，进入此应用的第一个页面，获取微信授权和获取用户的微信信息 ，根据微信返回的code判定用户是否授权，获取code之后请求数据可以获取用户信息，获取用户信息之后进行本地存储
     + `bloodSugarDoctor`    血糖医生，展示/输入用户填写的血糖信息
-    + `coreAddress`         地址列表
+    + `coreAddress`         地址列表,获取用户的地址列表
     + `coreGoodsList`       商品列表，展示所有商品
     + `coreGoodsDetail`     商品详情，展示商品的价格、产品图、物流等详细信息
     + `coreSearch`          商品搜索
     + `home`                商品广告页，展示网站当前推荐的产品
     + `coreOrderDetail`     订单页
-        ```
-        ffsd
-        ```
-    + `corePersonalCenter`  个人中心，显示用户的头像，手机号
-    + `coreRecommond`       我的奖励，奖励积分    
+    + `corePersonalCenter`  个人中心，显示用户的头像，手机号；
+    + `coreRecommond`       我的奖励，奖励积分，根据下单与最后一次领取时间推断是否可以领取，周期180d    
     + `errorPath`           请求错误路径会跳转此页面
-    + `experience`          体验页面，交押金，领取血糖仪
-    + `freePager`           领用试纸，根据用户的血糖仪领用180天可以免费领取试纸获取优惠购买试纸
+    + `experience`          体验页面，交押金，领取血糖仪，根据用户的状态判定是交押金还是领取血糖仪 子组件为：`components/experience`
+    + `freePager`           领用、优惠购买试纸，正常购买试纸。根据领用血糖仪的时间（或者最新的一次领取试纸的时间）判定是否可以领取试纸，领取周期：180d
     + `help`                帮助页面，可以查询客服电话，反馈信息，查看服务条款
-    + `oldHealth`           根据类型划分商品，请求同一类型的商品
-    + `coreCompletion`      订单完成页面
-    + `coreOrderConfirmTemp`订单确认页
-    + `regist`              用户注册
-    + `share`               分享页面
-    + `shoppingCart`        购物车
-    + `waitingPay`          待支付，支付失败之后等待支付页面
+    + `oldHealth`           根据类型划分商品，请求同一类型商品的列表。
+    + `coreCompletion`      订单完成页面，点击跳转到查看订单页面
+    + `coreOrderConfirmTemp`订单确认页，根据商品的列表、地址的id、加密串进行去下单调用支付。里面有地址的选择、添加与修改
+    + `regist`              用户注册，根据用户的手机号获取短信信息。根据信息进行注册，返回用户的信息。
+    + `share`               分享页面，一个分享的指引弹框
+    + `shoppingCart`        用户的清单，根据用户获取加入清单的商品列表。计算选择商品列表的费用计算；方法： 购物车商品的添加 购物车左划删除 购物车选择商品 
+    + `waitingPay`          待支付，支付失败之后等待支付页面，根据订单的orderId重新进行支付或者取消订单
  </details>
 
 #### 路由
@@ -248,10 +246,24 @@
 ---
 ### 微信的授权
 > 授权场景
-+ 引导用户进入授权页面同意授权，获取code
-+ 通过code换取网页授权access_token（与基础支持中的access_token不同）
-+ 如果需要，开发者可以刷新网页授权access_token，避免过期
-+ 通过网页授权access_token和openid获取用户基本信息（支持UnionID机制）
++ 根据网页的url判定code是否存在。
++ 如果code存在则授权成功，根据code请求接口获取用户的信息
++ 如果code不存在则获取用户的code，调用微信授权。在auth.vue中代码如：
+``` javascipt
+    function getCode(){
+    var query = {
+        domain: 'https://open.weixin.qq.com/connect/oauth2/authorize',//请求code的域名
+        appid: 'wxa69d932fd28deb71',//微信的公众号的标识
+        scope: 'snsapi_userinfo',//静默授权  //snsapi_userinfo(非静默)
+        state: saveSharingPerson(),//分享手机号的获取
+        redirect_uri: encodeURIComponent(window.location.href),//wx重定向地址 redirect_uri
+        response_type: 'code'//返回类型，请填写code
+    }
+    var url = query.domain + '?appid=' + query.appid + '&redirect_uri=' + 'https://m.tamaidan.com'+_self.$basePath+'/auth' + '&response_type=code&scope=snsapi_base&state='+query.state+'#wechat_redirect'
+    window.location.href = url//调用地址
+}
+```
++ 获取用户信息成功，授权成功
 > 授权支付
 + expost payApi(data)
 + return new Promise()
