@@ -328,7 +328,7 @@
 单个项目占据的主轴空间叫做main size，占据的交叉轴空间叫做cross size.  
 ![image](http://www.ruanyifeng.com/blogimg/asset/2015/bg2015071004.png)
 #### 容器的属性
-+ 以下6个属性设置在容器上。
+> 以下6个属性设置在容器上。
     + flex-direction
       + row →(默认) ：主轴为水平方向，起点在左端
       + row-reverse ← ：主轴为水平方向，起点在右端
