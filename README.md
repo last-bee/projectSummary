@@ -4,6 +4,9 @@
 ### 1. 资源
 + 代码路径：https://code.aliyun.com/
 + 文档路径：https://code.aliyun.com/
++ iconfonts：http://www.iconfont.cn/
+    + 登陆邮箱：`core2962@dingtalk.com`
+    + 登陆名：`tamaidan`
 + 对接人员：
     + 后台：
     + UI：
@@ -104,14 +107,26 @@
     + `date.js`             时间操作相关
     + `cache.js`            缓存操作相关
     + `checkout_url.js`     ulr路径
+        ```
+        注意：根据不同的环境切换了域名
+        baseHttp = 'http://192.168.10.49:8080/'  //线下本地
+        baseHttp = 'https://m.tamaidan.com/backtest/'  //线上测试
+        baseHttp = 'https://m.tamaidan.com/back/'  //线上正式
+        ```
     + `checkoutPhone.js`    校验手机号码
     + `common.js`           支付配置与调用微信支付返回new Promise()
     + `handle_dom.js`       DOM操作相关
     + `handle_img.js`       图片地址拼接
+        ```
+        服务端饭回来的图片地址都是地址片段，需要前端拼接成完整的url地址
+        ```
     + `numberHandler.js`    数字相关
     + `phoneType.js`        设备系统校验
     + `pickerSlots.js`      picker数据slots
     + `share.js`            微信分享配置
+        ```
+        推荐人手机号是通过点击他人分享的链接后得到的
+        ```
     + `SharingPerson.js`    推荐人手机号处理
     </details>
 
@@ -124,14 +139,24 @@
     + 4
  </details>
 
- + fonts
+ + [fonts](http://www.iconfont.cn/)
+    + 登陆邮箱：`core2962@dingtalk.com`
+    + 登陆名：`tamaidan`
 #### 子组件
  + components
     <details>
 
-    + `coreAddress`         用户的地址的子组件，根据地址的列表，循环地址的列表。
+    + `coreAddress`             用户的地址的子组件，根据地址的列表，循环地址的列表。
                                 方法：根据地址的id删除地址、根据地址的id编辑地址、根据地址的状态改变地址的默认地址状态
-    + `experience`          体验页面的子组件，获取体验的文字与图片的列表。里面有交押金弹框的提醒与调用支付
+    + `experience`              体验页面的子组件，获取体验的文字与图片的列表。里面有交押金弹框的提醒与调用支付
+    + `bloodSugarMap`           血糖图表
+    + `controlledDrug`          个人中心中的控制药物选择
+    + `coreGoodsSimpleDetail`   商品列表中商品简介
+    + `coreOrderClassify`       订单详情页
+    + `coreZtoInfo`             物流信息(中通)
+    + `myfooter`                footer导航切换
+    + `pageTitle`               各页面标题头
+    + `TheLogisticsInform`      物流暂停提示
     </details>
 #### 页面
  + page
@@ -162,23 +187,18 @@
 
 #### 路由
 + router
-    <details>
-
-    + 1
-    + 2
-    + 3
-    + 4
- </details>
+    + index.js
+    + map.js
+   
  
 #### 数据管理
-+ store
-    <details>
-
-    + 1
-    + 2
-    + 3
-    + 4
- </details>
++ store [vuex](https://vuex.vuejs.org/zh-cn/actions.html)数据管理，通过vuex数据核心概念将文件分类，方便管理
+   + getters.js    获取数据
+   + actions.js
+   + mutations.js  更改数据状态
+   + mutation-types.js
+   + state.js
+   + index.js  `new store`
  
 #### 依赖管理
 + package.json
@@ -218,29 +238,32 @@
 
 ![image](https://user-images.githubusercontent.com/24493052/36839484-2e5a663c-1d7d-11e8-80cd-1e32b7d394a8.png)
 
-
-在Ios系统下，当用户进入首页后，此时的首页为落地页，同时也是当前页，若首页的url:m.test.com,当
-如图：在SPA模式下：
+如上，Andriod系统更符合我们对url的认知，而Ios系统中的每个页面的url都是刚进入项目的第一页的url,除非是刷新页面；即：在SPA模式下：
 + Ios中，页面A为整个项目的真实url
 + Andriod中，每次路由跳转都会产生新的url
 > 微信js-sdk配置加密所校验的url是落地页url（即：`landingPage`）,所以以下情况若调用微信API需要在当前页面配置:
 > + `Ios`进入项目的第一页
 > + `Ios`页面刷新后
-> + `Andriod`路由跳转或页面刷新后 
+> + `Andriod`路由跳转或页面刷新后  
 ---
-+ 1. 在SPA/history模式下，不同系统对url的识别机制存在差异（如下图）：
-    + 1.1 `Ios`（所有页面的url等于落地页url）
-进入项目的落地页为配置页，只需要在落地页配置一次即可
-    + 1.2 `Android`（每次页面跳转都会产生新的url）
-需要调用微信api的页面需单独配置
-+ 2. Sha1加密注意事项
-    + 2.1 向后端发送的`url`进行sha1加密，`url`必须是动态获取（放在函数中动态执行）
-    + 2.2 本项目下向后端传入的url需进行`encodeURIComponent`转码，防止参数中的’&’出现混淆
-+ 3. 自定义分享配置注意事项：
-    + 3.1 分享链接link: 必须和公众号中设置的js安全域名一致（本项目中必须是`m.tamaidan.com`）,并且不需要使用`encodeURIComponent`转码，否则安卓端异常
-    + 3.2 若配置方法是在导航守卫中执行，注意`weixin API`的加载校验为异步，配置信息要在`weixin`校验完成后执行
+① 在SPA/history模式下，不同系统对url的识别机制存在差异（如下图）：
 
-### 2. 鉴权
++ `Ios`（所有页面的url等于落地页url
+进入项目的落地页为配置页，只需要在落地页配置一次即可
++ `Android`（每次页面跳转都会产生新的url
+需要调用微信api的页面需单独配置
+
+② Sha1加密注意事项
+
++ 向后端发送的`url`进行sha1加密，`url`必须是动态获取（放在函数中动态执行）
++ 本项目下向后端传入的url需进行`encodeURIComponent`转码，防止参数中的’&’出现混淆
+
+③ 自定义分享配置注意事项：
+
++ 分享链接link: 必须和公众号中设置的js安全域名一致（本项目中必须是`m.tamaidan.com`）,并且不需要使用`encodeURIComponent`转码，否则安卓端异常
++ 若配置方法是在导航守卫中执行，注意`weixin API`的加载校验为异步，配置信息要在`weixin`校验完成后执行
+
+### Ⅱ 鉴权与支付
 + 
 
 ---
@@ -281,8 +304,8 @@
     + nonceStr  随机串
     + package   订单详情扩展字符串  统一下单接口返回的prepay_id参数值，提交格式如：prepay_id=***
     + signType  微信签名方式
-    + paySign   微信签名
-> axios的信息过滤与拦截
+    + paySign   微信签名
+### Ⅲ axios的信息过滤与拦截
 + axios.interceptors.response.use((response)=>{})
     + axios的过滤方法 
     + response为服务器端返回的数据
